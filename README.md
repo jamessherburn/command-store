@@ -11,7 +11,8 @@ This repositroy contains all of the commands that I use on Mac for software deve
 ```
 alias cbn='~/scripts/copy_branch_name.sh'
 alias dlc='~/scripts/delete_local_changes.sh'
-alias mit='~/scripts/merge_into_staging.sh'
+alias mis='~/scripts/merge_into_staging.sh'
+alias note='~/scripts/note.sh'
 ```
 
 5. Source your `~/.zshrc` file: `source ~/.zshrc`
