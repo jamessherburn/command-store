@@ -13,6 +13,7 @@ alias cbn='~/scripts/copy_branch_name.sh'
 alias dlc='~/scripts/delete_local_changes.sh'
 alias mis='~/scripts/merge_into_staging.sh'
 alias note='~/scripts/note.sh'
+alias gnotes='~/scripts/gnotes.sh'
 ```
 
 5. Source your `~/.zshrc` file: `source ~/.zshrc`
