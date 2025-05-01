@@ -9,17 +9,17 @@ if [ ! -f "$FILE" ]; then
     exit 1
 fi
 
-# Read the contents of the file
-NOTES_CONTENT=$(cat "$FILE")
+# Display the contents of the file
+cat "$FILE"
 
 # Copy to clipboard
 if command -v xclip &> /dev/null; then
     # For Linux using xclip
-    echo "$NOTES_CONTENT" | xclip -selection clipboard
+    cat "$FILE" | xclip -selection clipboard
     echo "Notes copied to clipboard using xclip."
 elif command -v pbcopy &> /dev/null; then
     # For macOS using pbcopy
-    echo "$NOTES_CONTENT" | pbcopy
+    cat "$FILE" | pbcopy
     echo "Notes copied to clipboard using pbcopy."
 else
     echo "No clipboard utility found. Please install xclip (Linux) or use macOS."
