@@ -14,3 +14,4 @@ CURRENT_DATE=$(date +"%d %B %Y")
 # Append the note to the file
 echo -e "\n[$CURRENT_DATE]\n$1\n" >> "$FILE"
 
+bash gnotes-gen-html.sh

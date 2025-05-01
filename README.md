@@ -14,6 +14,7 @@ alias dlc='~/scripts/delete_local_changes.sh'
 alias mis='~/scripts/merge_into_staging.sh'
 alias note='~/scripts/note.sh'
 alias gnotes='~/scripts/gnotes.sh'
+alias gnotesgenhtml='~/scripts/gnotes-gen-html.sh'
 ```
 
 5. Source your `~/.zshrc` file: `source ~/.zshrc`
