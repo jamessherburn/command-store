@@ -20,14 +20,14 @@ while IFS= read -r line; do
         # Add target="_blank" to any links and make them bold and black
         task=$(echo "$task" | sed 's|http[s]*://[a-zA-Z0-9./?=_-]*|<a href="&" target="_blank" style="color: black; font-weight: bold;">&</a>|g')
         case $current_tag in
-            ToDo) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li><br>" >> "$todo_file" ;;
-            Done) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li><br>" >> "$done_file" ;;
-            Merged) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li><br>" >> "$merged_file" ;;
-            Doing) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li><br>" >> "$doing_file" ;;
+            ToDo) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li>" >> "$todo_file" ;;
+            Done) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li>" >> "$done_file" ;;
+            Merged) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li>" >> "$merged_file" ;;
+            Doing) echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$task</li>" >> "$doing_file" ;;
         esac
     elif [[ -n $line ]]; then
         # If no tag and line is not empty, consider it as a general note
-        echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$line</li><br>" >> "$general_notes_file"
+        echo "<li data-date=\"$current_date\"><strong>[$current_date]</strong><br>$line</li>" >> "$general_notes_file"
     fi
 done < "$input_file"
 
@@ -50,14 +50,15 @@ html_content="<html>
             width: 60%;
         }
         h2 {
-            margin: 20px 0;
+            margin: 10px 0; /* Reduced margin for headers */
         }
         ul {
             list-style-type: none;
             padding: 0;
         }
         li {
-            margin: 10px 0;
+            margin: 10px 0; /* Add margin between list items */
+            display: none; /* Initially hide all entries */
         }
         a {
             text-decoration: none;
@@ -65,34 +66,96 @@ html_content="<html>
         a:hover {
             text-decoration: underline;
         }
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Space between controls */
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+        }
+        .control-group label {
+            margin-right: 10px;
+            min-width: 100px; /* Ensures labels are aligned */
+        }
     </style>
     <script>
-        function filterEntries() {
-            const days = parseInt(prompt('Enter the number of days of history you want to see:', '0'));
-            const today = new Date();
-            const entries = document.querySelectorAll('li[data-date]');
-            entries.forEach(entry => {
-                const entryDate = new Date(entry.getAttribute('data-date'));
-                const diffDays = Math.floor((today - entryDate) / (1000 * 60 * 60 * 24));
-                if (diffDays > days) {
-                    entry.style.display = 'none';
-                }
+        function parseDate(dateString) {
+            const [day, month, year] = dateString.split(' ');
+            const months = {
+                'January': 0, 'February': 1, 'March': 2, 'April': 3,
+                'May': 4, 'June': 5, 'July': 6, 'August': 7,
+                'September': 8, 'October': 9, 'November': 10, 'December': 11
+            };
+            return new Date(year, months[month], day);
+        }
+
+        function filterEntries(filterFunction) {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                const entries = section.querySelectorAll('li[data-date]');
+                let hasVisibleEntries = false;
+                entries.forEach(entry => {
+                    if (filterFunction(entry)) {
+                        entry.style.display = 'block';
+                        hasVisibleEntries = true;
+                    } else {
+                        entry.style.display = 'none';
+                    }
+                });
+                section.style.display = hasVisibleEntries ? 'block' : 'none';
             });
         }
-        window.onload = filterEntries;
+
+        function filterByDate() {
+            const selectedDate = new Date(document.getElementById('date-picker').value);
+            filterEntries(entry => {
+                const entryDate = parseDate(entry.getAttribute('data-date'));
+                return entryDate.toDateString() === selectedDate.toDateString();
+            });
+        }
+
+        function filterByDays() {
+            const days = parseInt(document.getElementById('days-input').value) || 0;
+            const today = new Date();
+            filterEntries(entry => {
+                const entryDate = parseDate(entry.getAttribute('data-date'));
+                const diffDays = Math.floor((today - entryDate) / (1000 * 60 * 60 * 24));
+                return diffDays <= days;
+            });
+        }
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date-picker').value = today;
+            filterByDate();
+        }
     </script>
 </head>
 <body>
-    <div class=\"container\">"
+    <div class=\"container\">
+        <div class=\"controls\">
+            <div class=\"control-group\">
+                <label for=\"date-picker\">Specific Date:</label>
+                <input type=\"date\" id=\"date-picker\" onchange=\"filterByDate()\">
+            </div>
+            <div class=\"control-group\">
+                <label for=\"days-input\">Last X Days:</label>
+                <input type=\"text\" id=\"days-input\" placeholder=\"Enter number of days\" oninput=\"filterByDays()\">
+            </div>
+        </div>
+"
 
 # Append categorized entries to the HTML content
 append_entries() {
     local tag="$1"
     local file="$2"
     if [[ -s $file ]]; then
-        html_content+="<h2>$tag</h2><ul>"
+        html_content+="<div class=\"section\"><h2>$tag</h2><ul>"
         html_content+="$(cat "$file")"
-        html_content+="</ul>"
+        html_content+="</ul></div>"
     fi
 }
 
@@ -115,9 +178,5 @@ echo "$html_content" > "$output_file"
 rm "$todo_file" "$done_file" "$merged_file" "$doing_file" "$general_notes_file"
 
 echo "HTML file '$output_file' has been generated."
-
-
-
-
 
 
