@@ -15,6 +15,8 @@ alias mis='~/scripts/merge_into_staging.sh'
 alias note='~/scripts/note.sh'
 alias gnotes='~/scripts/gnotes.sh'
 alias gnotesgenhtml='~/scripts/gnotes-gen-html.sh'
+alias createpr='~/scripts/create_pr.sh'
+alias branchcleaner='~/scripts/branch_cleaner.sh'
 ```
 
 5. Source your `~/.zshrc` file: `source ~/.zshrc`
